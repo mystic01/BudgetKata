@@ -10,41 +10,46 @@ namespace GOOS_Sample.Helper
         {
             decimal total = 0;
 
-            foreach (var b in budgetList)
+            foreach (var budget in budgetList)
             {
-                var month = Convert.ToInt32(b.YearMonth.Substring(b.YearMonth.Length - 2));
-                var year = Convert.ToInt32(b.YearMonth.Substring(0, 4));
-                var daysInMonth = DateTime.DaysInMonth(year, month);
-                var startOfBudget = DateTime.ParseExact(b.YearMonth + "-01", "yyyy-MM-dd", null);
-                var endOfBudget = DateTime.ParseExact(b.YearMonth + "-" + daysInMonth, "yyyy-MM-dd", null);
-                var averageEachDay = (decimal)b.Amount / daysInMonth;
-                int totalDay;
+                var daysInMonth = budget.DaysInMonth;
+                var startOfBudget = budget.StartOfBudget;
+                var endOfBudget = budget.EndOfBudget;
+                var dailyAmount = budget.DailyAmount;
+                var totalDay = GetOverlapDays(dateRange, endOfBudget, startOfBudget, daysInMonth);
 
-                if (dateRange.Start > endOfBudget || dateRange.End < startOfBudget)
-                {
-                    totalDay = 0;
-                }
-                else if (dateRange.Start.ToString("yyyyMM") == dateRange.End.ToString("yyyyMM"))
-                {
-                    totalDay = (dateRange.End.Day - dateRange.Start.Day + 1);
-                }
-                else if (dateRange.Start.ToString("yyyyMM") == startOfBudget.ToString("yyyyMM"))
-                {
-                    totalDay = (daysInMonth - dateRange.Start.Day + 1);
-                }
-                else if (dateRange.End.ToString("yyyyMM") == startOfBudget.ToString("yyyyMM"))
-                {
-                    totalDay = dateRange.End.Day;
-                }
-                else
-                {
-                    totalDay = daysInMonth;
-                }
-
-                total += averageEachDay * totalDay;
+                total += dailyAmount * totalDay;
             }
 
             return total;
+        }
+
+        private static int GetOverlapDays(DateRange dateRange, DateTime endOfBudget, DateTime startOfBudget, int daysInMonth)
+        {
+            int overlapDays;
+
+            if (dateRange.Start > endOfBudget || dateRange.End < startOfBudget)
+            {
+                overlapDays = 0;
+            }
+            else if (dateRange.Start.ToString("yyyyMM") == dateRange.End.ToString("yyyyMM"))
+            {
+                overlapDays = (dateRange.End.Day - dateRange.Start.Day + 1);
+            }
+            else if (dateRange.Start.ToString("yyyyMM") == startOfBudget.ToString("yyyyMM"))
+            {
+                overlapDays = (daysInMonth - dateRange.Start.Day + 1);
+            }
+            else if (dateRange.End.ToString("yyyyMM") == startOfBudget.ToString("yyyyMM"))
+            {
+                overlapDays = dateRange.End.Day;
+            }
+            else
+            {
+                overlapDays = daysInMonth;
+            }
+
+            return overlapDays;
         }
     }
 }
